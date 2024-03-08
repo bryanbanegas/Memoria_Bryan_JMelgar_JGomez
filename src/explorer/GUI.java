@@ -18,9 +18,8 @@ public class GUI extends javax.swing.JFrame {
     DefaultMutableTreeNode modelo;
     public GUI() {
         initComponents();
-        raiz = new File("");
-        modelo = new DefaultMutableTreeNode(raiz.getPath());
-        Carpetas = new javax.swing.JTree(modelo);
+        raiz = crearRaiz();
+        actualizarTree();
     }
 
     /**
@@ -165,11 +164,29 @@ public class GUI extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
     
-    public void listar(File raiz){
+    
+    public File crearRaiz(){
+        File carpeta = new File("Raiz");
+        if(!carpeta.exists()){
+            carpeta.mkdirs();
+        }
+        return carpeta;
+    }
+    
+    private void listar(File raiz, DefaultMutableTreeNode nodo){
         File[] archivos = raiz.listFiles();
         for(File file : archivos){
             DefaultMutableTreeNode archivo = new DefaultMutableTreeNode(file.getPath());
-            modelo.add(archivo);
+            nodo.add(archivo);
+            if(file.isDirectory()){
+                listar(file,archivo);
+            }
         }
+    }
+    
+    public void actualizarTree(){
+        modelo = new DefaultMutableTreeNode(raiz.getPath());
+        listar(raiz, modelo);
+        Carpetas.setModel(new DefaultTreeModel(modelo));
     }
 }
