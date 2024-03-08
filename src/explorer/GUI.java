@@ -5,6 +5,13 @@
 package explorer;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -15,10 +22,15 @@ import javax.swing.tree.DefaultTreeModel;
 public class GUI extends javax.swing.JFrame {
 
     File raiz;
+    File select, create;
+    Funciones func = new Funciones();
     DefaultMutableTreeNode modelo;
+    
     public GUI() {
         initComponents();
         raiz = crearRaiz();
+        select = raiz;
+        func.setFile(raiz.getPath());
         actualizarTree();
     }
 
@@ -33,25 +45,51 @@ public class GUI extends javax.swing.JFrame {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         Carpetas = new javax.swing.JTree();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        Crear = new javax.swing.JButton();
+        Copiar = new javax.swing.JButton();
+        CNombre = new javax.swing.JButton();
+        Pegar = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        Orden = new javax.swing.JComboBox<>();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        Carpetas.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                CarpetasValueChanged(evt);
+            }
+        });
         jScrollPane1.setViewportView(Carpetas);
 
-        jButton1.setText("Crear Archivo");
+        Crear.setText("Crear Archivo o Carpeta");
+        Crear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CrearActionPerformed(evt);
+            }
+        });
 
-        jButton2.setText("Copiar Archivo");
+        Copiar.setText("Copiar Archivo");
+        Copiar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CopiarActionPerformed(evt);
+            }
+        });
 
-        jButton3.setText("Cambiar Nombre Archivo");
+        CNombre.setText("Cambiar Nombre Archivo");
+        CNombre.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CNombreActionPerformed(evt);
+            }
+        });
 
-        jButton4.setText("Pegar Archivo");
+        Pegar.setText("Pegar Archivo");
+        Pegar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                PegarActionPerformed(evt);
+            }
+        });
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 20)); // NOI18N
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -59,7 +97,19 @@ public class GUI extends javax.swing.JFrame {
 
         jLabel2.setText("Ordenar:");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nombre", "Fecha", "Tipo", "Tamaño" }));
+        Orden.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Fecha", "Nombre", "Tipo", "Tamaño" }));
+        Orden.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                OrdenItemStateChanged(evt);
+            }
+        });
+
+        jButton1.setText("Escribir en Archivo.txt");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -67,25 +117,24 @@ public class GUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(37, 37, 37)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(35, 35, 35))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                            .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel2)
-                                .addGap(18, 18, 18)
-                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(86, 86, 86))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)))))
+                                .addGap(24, 24, 24)
+                                .addComponent(Orden, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(37, 37, 37)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(Crear, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Copiar, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(CNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Pegar, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(35, 35, 35)))
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 550, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -93,22 +142,24 @@ public class GUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(26, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(64, 64, 64)
-                        .addComponent(jButton1)
-                        .addGap(51, 51, 51)
-                        .addComponent(jButton2)
+                        .addGap(31, 31, 31)
+                        .addComponent(Crear)
+                        .addGap(46, 46, 46)
+                        .addComponent(Copiar)
+                        .addGap(40, 40, 40)
+                        .addComponent(Pegar)
+                        .addGap(49, 49, 49)
+                        .addComponent(CNombre)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton4)
-                        .addGap(47, 47, 47)
-                        .addComponent(jButton3)
-                        .addGap(28, 28, 28)
+                        .addComponent(jButton1)
+                        .addGap(40, 40, 40)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2)
-                            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(68, 68, 68))
+                            .addComponent(Orden, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(37, 37, 37))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 450, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(24, 24, 24))))
@@ -116,6 +167,81 @@ public class GUI extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void CarpetasValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_CarpetasValueChanged
+        // TODO add your handling code here:
+        try{
+            System.out.println(Carpetas.getLastSelectedPathComponent().toString());
+            select = new File(Carpetas.getLastSelectedPathComponent().toString());
+            func.setFile(select.getPath());
+        }catch(Exception e){
+        
+        }
+    }//GEN-LAST:event_CarpetasValueChanged
+
+    private void CrearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CrearActionPerformed
+        // TODO add your handling code here:
+        String dir = JOptionPane.showInputDialog("Agregue el nombre del archivo: ");
+        
+        if(dir != null){
+            create = new File(select.getAbsolutePath() + "/"+dir);
+            if(dir.contains(".")){
+                try {
+                    create.createNewFile();
+                } catch (IOException ex) {
+                    System.out.println("Error al crear");
+                }
+            }else{
+            create.mkdir();
+            }
+        }
+        actualizarTree();
+    }//GEN-LAST:event_CrearActionPerformed
+
+    private void CNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CNombreActionPerformed
+        // TODO add your handling code here:
+        String dir = JOptionPane.showInputDialog("Agregue el nombre del archivo: ");
+        if(dir != null){
+            func.cambiarNombre(new File(select.getParent(),dir));
+        }
+        actualizarTree();
+    }//GEN-LAST:event_CNombreActionPerformed
+
+    private void CopiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CopiarActionPerformed
+        // TODO add your handling code here:
+        create = new File(select.getPath());
+        func.setFile(select.getPath());
+    }//GEN-LAST:event_CopiarActionPerformed
+
+    private void PegarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_PegarActionPerformed
+        if(create.isDirectory()){
+            new File(select.getPath()+ "/" + create.getName()).mkdir();
+        }else{
+            try {
+                new File(select.getPath()+ "/" + create.getName()).createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        actualizarTree();
+    }//GEN-LAST:event_PegarActionPerformed
+
+    private void OrdenItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_OrdenItemStateChanged
+        // TODO add your handling code here:
+        actualizarTree();
+    }//GEN-LAST:event_OrdenItemStateChanged
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        try {
+            // TODO add your handling code here:
+            func.setFile(select.getPath());
+            String datos=JOptionPane.showInputDialog("Ingrese el texto:");
+            System.out.println(datos);
+            func.registrarDatos(datos);
+        } catch (IOException ex) {
+            Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -153,12 +279,13 @@ public class GUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton CNombre;
     private javax.swing.JTree Carpetas;
+    private javax.swing.JButton Copiar;
+    private javax.swing.JButton Crear;
+    private javax.swing.JComboBox<String> Orden;
+    private javax.swing.JButton Pegar;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
@@ -173,20 +300,132 @@ public class GUI extends javax.swing.JFrame {
         return carpeta;
     }
     
-    private void listar(File raiz, DefaultMutableTreeNode nodo){
+    private void listarPorFecha(File raiz, DefaultMutableTreeNode nodo){
         File[] archivos = raiz.listFiles();
         for(File file : archivos){
             DefaultMutableTreeNode archivo = new DefaultMutableTreeNode(file.getPath());
             nodo.add(archivo);
             if(file.isDirectory()){
-                listar(file,archivo);
+                listarPorFecha(file,archivo);
+            }
+        }
+    }
+    
+    public void listarPorTamano(File raiz, DefaultMutableTreeNode nodo) {
+        File[] archivos=raiz.listFiles();
+
+        ArrayList<File> listaArchivos=new ArrayList<>();
+
+        for (File file : archivos) {
+            listaArchivos.add(file);
+        }
+
+        Collections.sort(listaArchivos, new Comparator<File>() {
+            public int compare(File f1, File f2) {
+                long diff=f2.length()-f1.length();
+                if(diff<0){
+                    return-1;
+                }else if(diff>0){
+                    return 1;
+                }else{
+                    return 0;
+                }
+            }
+        });
+
+        for(File file : listaArchivos){
+            DefaultMutableTreeNode archivo=new DefaultMutableTreeNode(file.getPath());
+            nodo.add(archivo);
+            if(file.isDirectory()){
+                listarPorTamano(file, archivo);
             }
         }
     }
     
     public void actualizarTree(){
         modelo = new DefaultMutableTreeNode(raiz.getPath());
-        listar(raiz, modelo);
+        switch(Orden.getSelectedIndex()){
+            case 0:
+                listarPorFecha(raiz, modelo);
+                break;
+            case 1:
+                listarPorNombre(raiz, modelo);
+                break;
+            case 2:
+                listarPorTipo(raiz, modelo);
+                break;
+            case 3:
+                listarPorTamano(raiz, modelo);
+                break;
+        }
         Carpetas.setModel(new DefaultTreeModel(modelo));
+    }
+
+    private void listarPorNombre(File raiz, DefaultMutableTreeNode nodo) {
+        File[] archivos = raiz.listFiles();
+
+        // Lista para almacenar los archivos y carpetas
+        ArrayList<File> listaArchivos = new ArrayList<>();
+        for (File file : archivos) {
+            listaArchivos.add(file);
+        }
+
+        // Ordenar la lista alfabéticamente
+        Collections.sort(listaArchivos, new Comparator<File>() {
+            public int compare(File f1, File f2) {
+                return f1.getName().compareToIgnoreCase(f2.getName());
+            }
+        });
+
+        // Agregar los archivos ordenados al nodo
+        for (File file : listaArchivos) {
+            DefaultMutableTreeNode archivo = new DefaultMutableTreeNode(file.getPath());
+            nodo.add(archivo);
+            if (file.isDirectory()) {
+                listarPorNombre(file, archivo);
+            }
+        }
+
+    }
+    
+    private void listarPorTipo(File raiz, DefaultMutableTreeNode nodo) {
+        File[] archivos = raiz.listFiles();
+        ArrayList<File> dir = new ArrayList();
+        ArrayList<File> arc = new ArrayList();
+        
+        for(File arcs:archivos){
+            if(arcs.isFile()){
+                arc.add(arcs);
+            }else{
+                dir.add(arcs);
+            }
+        }
+        
+        Collections.sort(arc, new Comparator<File>() {
+            public int compare(File f1, File f2) {
+                return f1.getName().compareToIgnoreCase(f2.getName());
+            }
+        });
+        
+        Collections.sort(dir, new Comparator<File>() {
+            public int compare(File f1, File f2) {
+                return f1.getName().compareToIgnoreCase(f2.getName());
+            }
+        });
+        
+        for(int i = 0; i < arc.size(); i++){
+            archivos[i] = arc.get(i);
+        }
+        for(int i = arc.size(); i < arc.size() + dir.size(); i++){
+            archivos[i] = dir.get(i- arc.size());
+        }
+        
+        for(File file : archivos){
+            DefaultMutableTreeNode archivo = new DefaultMutableTreeNode(file.getPath());
+            nodo.add(archivo);
+            if(file.isDirectory()){
+                listarPorFecha(file,archivo);
+            }
+        }
     }
 }

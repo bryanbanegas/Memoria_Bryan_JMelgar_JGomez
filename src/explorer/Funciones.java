@@ -4,6 +4,7 @@
  */
 package explorer;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -37,6 +38,7 @@ public class Funciones {
             if(!mifile.isDirectory()){
                 FileWriter file=new FileWriter(mifile);
                 file.write(datos);
+                file.close();
             }else{
                 JOptionPane.showMessageDialog(null, "Este no es un archivo.");
             }
